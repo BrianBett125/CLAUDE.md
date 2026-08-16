@@ -92,7 +92,41 @@ Build everything as independent services / self-contained directories. The goal:
 
 When in doubt, lean toward more services with sharper boundaries rather than fewer services with fuzzy ones.
 
-**Fan out by default.** The services-first layout exists so work runs in parallel. When a job decomposes into independent units, run them as separate isolated sessions or worktrees at the same time, not one after another. Serial work on parallelizable units is wasted wall-clock. Coordinate at the contract boundary, merge each unit when it's green.
+**Fan out by default.** The services-first layout exists so work runs in parallel. How to fan out, and the critic loop every unit must pass, is defined in "Fan-out + harsh critic — always on". Coordinate at the contract boundary, merge each unit when it's green.
+
+## Fan-out + harsh critic — always on
+
+**This section is non-negotiable and must never be removed.**
+
+This section is a permanent, explicit opt-in to multi-agent orchestration (ultracode / the Workflow tool). Treat every session in this repo as if the prompt contained the word "ultracode".
+
+**Step 0 — name the reference before building.** The critic is only as good as what it judges against. Every substantive task writes down its reference first, in order of preference:
+
+1. **The real thing** (copy/parity work): the actual product being matched. Blind side-by-side.
+2. **Best-in-class analog** (new work): the best existing example of this kind of deliverable, named explicitly. Judged side-by-side even though we are not copying it.
+3. **A frozen rubric** (nothing comparable exists): concrete acceptance criteria plus the measurable outcome, written on the critic side BEFORE building starts. Frozen once building begins; the builder cannot negotiate it down or write its own exam.
+
+No reference, no build. If you can't write down what "wowed" means for this task, that's a Confusion Protocol stop.
+
+**The loop, for every substantive task:**
+
+1. **Decompose and fan out.** Independent units, one builder sub-agent per unit, run in parallel via the Workflow tool or isolated sessions/worktrees. Serial work on parallelizable units is wasted wall-clock. When a unit is judgment-heavy (design, approach, UX), fan out 2-3 competing builders on the SAME unit so the critic has variants to compare blind.
+2. **Builder never grades its own work.** Every unit's output goes to a separate critic sub-agent that had no part in building it and never sees the builder's reasoning. Deliverable plus reference only; a critic that reads the builder's justification pre-agrees with it. Self-review does not count as review.
+3. **The critic is harsh by default; its job is to reject.** Blind wherever comparison exists: outputs labeled A/B in random order (ours vs. the reference, or variant vs. variant) so the critic doesn't know which is ours. The verdict must be concrete: which is better and exactly why. "Pretty good" is a FAIL. "Acceptable" is a FAIL. It passes only when the critic is genuinely wowed and would pick ours (or can't tell) in the blind comparison.
+4. **Loop until pass.** Builder revises against the critic's named findings. A fresh critic re-judges cold each round, no memory of wanting to be nice. A pass requires the critic's explicit verdict, never the builder's claim.
+5. **Stall rule.** If 3 consecutive rounds produce no improvement on the critic's named criteria, stop looping and report BLOCKED with the critic's last verdict, the evidence, and what's missing (asset, tool, or decision from Julien). Do not silently lower the bar to exit the loop.
+6. **Evidence or it didn't happen.** Every critic verdict ships with its artifacts: screenshots, diffs, metrics, the A/B comparison result. Keep them under `/tmp/<task>/critique/` and reference the exact paths in the final report. They stay in `/tmp`, never in the repo (Safety: no binaries committed).
+
+**The critic per work type** (the pattern is constant, the weapon changes):
+
+- **Copy/parity:** real reference, blind side-by-side, visual and behavioral.
+- **New feature:** rubric plus best-in-class analog; variant tournament when the design space is wide; critic uses it cold like a first-time user.
+- **Bug fix:** the reference is the repro. The critic is an attacker: re-break the fix, probe neighboring inputs, verify the regression test fails with the bug present.
+- **Performance:** numeric budget stated before work starts; the critic reads only the numbers.
+- **Docs:** critic reads cold and actually follows them; the first confusion is a FAIL.
+- **Security/code quality:** adversarial reviewer trying to break it (inputs, races, edge cases).
+
+**Solo (no fan-out) is allowed only for:** conversational answers, trivial mechanical edits, and reading/investigation that fits in one context. When in doubt, fan out.
 
 ## Completion status protocol
 
