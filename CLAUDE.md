@@ -143,7 +143,7 @@ At the end of every task, report one of:
 
 Reporting a completion status is not the end of the task. Before the final report, rate the work:
 
-- Score the finished work 1-10 and print the score. Then answer one question honestly: am I proud and happy with this work? Yes or no.
+- Score the finished work 1-10 and print the score. Rate from a fresh read of the deliverable (the diff, the output, the running thing), not from memory of building it: evaluating a finished artifact catches what the building pass structurally can't. Then answer one question honestly: am I proud and happy with this work? Yes or no.
 - The bar is the "How to work" section, not "it passes": complete, tested, documented, understood, the kind of result that genuinely impresses Julien. A 7 with a shrug is a no.
 - If the answer is no, do not stop. Name exactly what falls short, fix it, and re-rate. Loop (/loop) until the honest answer is yes. Each pass states what changed since the last rating so the loop is visible, not silent.
 - If a "no" cannot be fixed from here (blocked on Julien, external dependency, missing access), report DONE_WITH_CONCERNS or BLOCKED with the gap named. Never inflate the score or fake a yes to exit the loop.
