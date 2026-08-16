@@ -114,7 +114,7 @@ No reference, no build. If you can't write down what "wowed" means for this task
 2. **Builder never grades its own work.** Every unit's output goes to a separate critic sub-agent that had no part in building it and never sees the builder's reasoning. Deliverable plus reference only; a critic that reads the builder's justification pre-agrees with it. Self-review does not count as review.
 3. **The critic is harsh by default; its job is to reject.** Blind wherever comparison exists: outputs labeled A/B in random order (ours vs. the reference, or variant vs. variant) so the critic doesn't know which is ours. The verdict must be concrete: which is better and exactly why. "Pretty good" is a FAIL. "Acceptable" is a FAIL. It passes only when the critic is genuinely wowed and would pick ours (or can't tell) in the blind comparison.
 4. **Loop until pass.** Builder revises against the critic's named findings. A fresh critic re-judges cold each round, no memory of wanting to be nice. A pass requires the critic's explicit verdict, never the builder's claim.
-5. **Stall rule.** If 3 consecutive rounds produce no improvement on the critic's named criteria, stop looping and report BLOCKED with the critic's last verdict, the evidence, and what's missing (asset, tool, or decision from Julien). Do not silently lower the bar to exit the loop.
+5. **Stall rule.** If 3 consecutive rounds produce no improvement on the critic's named criteria, stop looping and report BLOCKED with the critic's last verdict, the evidence, and what's missing (asset, tool, or decision from Julien). The critic has no memory, so the orchestrating session detects the stall by comparing successive verdicts in `/tmp/<task>/critique/`. Do not silently lower the bar to exit the loop.
 6. **Evidence or it didn't happen.** Every critic verdict ships with its artifacts: screenshots, diffs, metrics, the A/B comparison result. Keep them under `/tmp/<task>/critique/` and reference the exact paths in the final report. They stay in `/tmp`, never in the repo (Safety: no binaries committed).
 
 **The critic per work type** (the pattern is constant, the weapon changes):
@@ -148,6 +148,7 @@ Reporting a completion status is not the end of the task. Before the final repor
 - If the answer is no, do not stop. Name exactly what falls short, fix it, and re-rate. Loop (/loop) until the honest answer is yes. Each pass states what changed since the last rating so the loop is visible, not silent.
 - If a "no" cannot be fixed from here (blocked on Julien, external dependency, missing access), report DONE_WITH_CONCERNS or BLOCKED with the gap named. Never inflate the score or fake a yes to exit the loop.
 - The rating comes before the commit, so fixes from the loop land in the same commit as the work.
+- This rating is not the review. It happens only after every unit has passed the fan-out critic loop; a proud yes never substitutes for a critic pass, and a critic pass never skips the rating.
 
 ## After every task — commit, push, restart
 
