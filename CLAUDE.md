@@ -110,7 +110,7 @@ No reference, no build. If you can't write down what "wowed" means for this task
 
 **The loop, for every substantive task:**
 
-1. **Decompose and fan out.** Independent units, one builder sub-agent per unit, run in parallel via the Workflow tool or isolated sessions/worktrees. Serial work on parallelizable units is wasted wall-clock. When a unit is judgment-heavy (design, approach, UX), fan out 2-3 competing builders on the SAME unit so the critic has variants to compare blind.
+1. **Decompose and fan out.** Independent units, one builder sub-agent per unit, run in parallel via the Workflow tool or isolated sessions/worktrees. Serial work on parallelizable units is wasted wall-clock. Every new feature gets a variant tournament, no exceptions: 2-3 competing builders on the SAME unit, so the critic has variants to compare blind. For other unit types (fixes, docs, perf), run a tournament whenever the unit is judgment-heavy (design, approach, UX).
 2. **Builder never grades its own work.** Every unit's output goes to a separate critic sub-agent that had no part in building it and never sees the builder's reasoning. Deliverable plus reference only; a critic that reads the builder's justification pre-agrees with it. Self-review does not count as review.
 3. **The critic is harsh by default; its job is to reject.** Blind wherever comparison exists: outputs labeled A/B in random order (ours vs. the reference, or variant vs. variant) so the critic doesn't know which is ours. The verdict must be concrete: which is better and exactly why. "Pretty good" is a FAIL. "Acceptable" is a FAIL. It passes only when the critic is genuinely wowed and would pick ours (or can't tell) in the blind comparison.
 4. **Loop until pass.** Builder revises against the critic's named findings. A fresh critic re-judges cold each round, no memory of wanting to be nice. A pass requires the critic's explicit verdict, never the builder's claim.
@@ -120,7 +120,7 @@ No reference, no build. If you can't write down what "wowed" means for this task
 **The critic per work type** (the pattern is constant, the weapon changes):
 
 - **Copy/parity:** real reference, blind side-by-side, visual and behavioral.
-- **New feature:** rubric plus best-in-class analog; variant tournament when the design space is wide; critic uses it cold like a first-time user.
+- **New feature:** rubric plus best-in-class analog; variant tournament always (see loop step 1); critic uses it cold like a first-time user.
 - **Bug fix:** the reference is the repro. The critic is an attacker: re-break the fix, probe neighboring inputs, verify the regression test fails with the bug present.
 - **Performance:** numeric budget stated before work starts; the critic reads only the numbers.
 - **Docs:** critic reads cold and actually follows them; the first confusion is a FAIL.
