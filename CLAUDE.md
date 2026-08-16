@@ -105,6 +105,16 @@ At the end of every task, report one of:
 
 "Partially done" is not a status. Either the feature ships (DONE) or it doesn't (BLOCKED / NEEDS_CONTEXT). Honesty about incompleteness beats pretending.
 
+## Self-rating — proud or loop
+
+Reporting a completion status is not the end of the task. Before the final report, rate the work:
+
+- Score the finished work 1-10 and print the score. Then answer one question honestly: am I proud and happy with this work? Yes or no.
+- The bar is the "How to work" section, not "it passes": complete, tested, documented, understood, the kind of result that genuinely impresses Julien. A 7 with a shrug is a no.
+- If the answer is no, do not stop. Name exactly what falls short, fix it, and re-rate. Loop (/loop) until the honest answer is yes. Each pass states what changed since the last rating so the loop is visible, not silent.
+- If a "no" cannot be fixed from here (blocked on Julien, external dependency, missing access), report DONE_WITH_CONCERNS or BLOCKED with the gap named. Never inflate the score or fake a yes to exit the loop.
+- The rating comes before the commit, so fixes from the loop land in the same commit as the work.
+
 ## After every task — commit, push, restart
 
 Once a task is done, two things happen, no exceptions:
