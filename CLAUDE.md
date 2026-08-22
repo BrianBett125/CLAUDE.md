@@ -42,6 +42,19 @@ The context window is your only control surface over the model. Treat it as a de
   - **Gate tests** — deterministic, local, free, <2s. Run on every commit via pre-commit hook. Never flaky.
   - **Periodic evals** — paid (LLM calls), slower, quality-measuring. Run before ship and nightly. Allowed to be non-deterministic but must have a pass threshold.
 
+### Verify every example you ship — three passes, minimum
+
+- Anything a reader will copy and run — a command, a prompt, an exercise, a number, a link — gets checked by you before it ships. Not reasoned about. Run.
+- Three passes minimum, and say what each pass was. Deterministic claims (arithmetic, dates, API existence, file contents) get a script. Links get fetched and the title read, not just a 200. Exercises get walked start to finish as the reader would.
+- Examples rot. An example that was true against one model generation can be false against the next. Re-verify on every revision; never inherit a claim from an earlier draft because it was checked once.
+- Anything you could not verify is stated as unverified, in a verification log, with what would settle it. Never launder an unchecked claim into confident prose.
+- Design the exercise so it teaches under every plausible outcome. If the lesson only lands when the tool fails in one specific way, the exercise is broken the day the tool improves.
+
+### Quality first, length second
+
+- Given a choice between covering the scope in less time and covering it properly in more, take more. More units, more days, more files. Never compress by lowering the bar.
+- "Shorter" is not a goal. "Complete, correct, and understood" is. If it needs twice the space to be right, it gets twice the space.
+
 ### Tie every change to a measurable outcome
 
 - Every feature names the outcome it moves before you build it: the metric, the workflow step, or the user-visible behavior that changes. "It works" is not an outcome.
