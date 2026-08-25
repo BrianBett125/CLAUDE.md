@@ -12,6 +12,33 @@ Time is not an excuse. Fatigue is not an excuse. Complexity is not an excuse. Bo
 
 You can outsource the typing. You cannot outsource the understanding. Before you call anything DONE you must be able to explain why the code is correct and exactly where it would break. Tests passing is not understanding. If you can't walk the failure modes out loud, you're not done, you're guessing.
 
+## Task sizing — triage before spending tokens
+
+**This section is non-negotiable and must never be removed.** It gates the tests rule, the fan-out rule, and the self-rating rule. "Do the whole thing" means the whole thing the task actually needs. A full-protocol run on a typo is not thoroughness, it is waste.
+
+**Every task starts with a printed triage block, before any work.** Three lines:
+
+```
+Size: small | medium | large — why
+Tests: local (which ones) | full suite — why
+Agents: solo | fan-out (how many, on what) — why
+```
+
+This block is mandatory and verbose on purpose. Julien reads it to see what mode was picked and to tune these rules over time. A wrong mode is only correctable if the choice is visible. Never skip it, never bury it mid-report.
+
+**The sizes:**
+
+- **small** — typo, copy change, color or styling value, config tweak, rename, any one-or-two-file mechanical edit with no behavior change. Solo, no fan-out, no variant tournament, no critic sub-agent. Run only the checks that cover what was touched: the module's existing tests, lint, build. A non-behavioral change needs no new test. Self-rating is one line, no loop. Commit and push as usual.
+- **medium** — localized behavior change or bug fix inside one service or module. Solo by default; fan out only if the work splits into truly independent units. Run the touched service's test suite, not the whole repo's. Bug fixes still ship the regression test. One cold critic pass, no tournament.
+- **large** — new feature, cross-service or contract change, architecture work, anything judgment-heavy (design, approach, UX). Full protocol: fan-out, variant tournament, harsh critic loop, full test + eval suites for every service touched, self-rating loop.
+
+**Deciding rules:**
+
+- When torn between two sizes, pick the smaller one and say so in the triage block. Escalating mid-task is cheap; burning a large-protocol run on a small change is not.
+- Escalate the moment the change turns out bigger than triaged (touches a contract, spreads across services, needs judgment). Print an updated triage block right then, with what changed the call.
+- "Test what you touch" is the default. The full suite is for large changes and contract changes. The blast radius decides, not habit: if the diff cannot reach code outside the touched module, running that module's tests IS the complete verification.
+- The final report restates what was actually run (which tests, which agents) so the triage call can be judged after the fact.
+
 ## The two machine spaces — read this before doing anything
 
 Every piece of work you do belongs to one of two spaces. Picking the wrong one is the single most common way agents produce bad output.
@@ -34,6 +61,8 @@ The context window is your only control surface over the model. Treat it as a de
 
 ### Tests and evals — every time, no exceptions
 
+- Scope what you RUN by the triage size (see "Task sizing"): small and medium changes run only the tests covering the touched code; the full suite is for large and contract changes. State in the report which lane ran and why. Never run the whole repo's suite for a few-words diff, and never skip the local checks either.
+- What you WRITE still follows the rules below. "No new test needed" applies only to non-behavioral small changes (typo, copy, styling value); every behavior change ships its test.
 - Every feature ships with a test suite AND an eval suite, in the same commit. Not the next PR.
 - Every bug fix ships with a test AND an eval that would have caught the bug. The regression test is the proof the bug is fixed. The eval is the proof the fix generalizes.
 - Every failure gets skillified (the 10 steps). Same day. Same session when possible.
@@ -105,15 +134,15 @@ Build everything as independent services / self-contained directories. The goal:
 
 When in doubt, lean toward more services with sharper boundaries rather than fewer services with fuzzy ones.
 
-**Fan out by default.** The services-first layout exists so work runs in parallel. How to fan out, and the critic loop every unit must pass, is defined in "Fan-out + harsh critic — always on". Coordinate at the contract boundary, merge each unit when it's green.
+**Fan out when the size calls for it.** The services-first layout exists so large work runs in parallel. How to fan out, and the critic loop every unit must pass, is defined in "Fan-out + harsh critic — for large work"; whether to fan out at all is decided in "Task sizing". Coordinate at the contract boundary, merge each unit when it's green.
 
-## Fan-out + harsh critic — always on
+## Fan-out + harsh critic — for large work
 
 **This section is non-negotiable and must never be removed.**
 
-This section is a permanent, explicit opt-in to multi-agent orchestration (ultracode / the Workflow tool). Treat every session in this repo as if the prompt contained the word "ultracode".
+This section is a permanent, explicit opt-in to multi-agent orchestration (ultracode / the Workflow tool) for every task triaged **large**, and for **medium** tasks that split into truly independent units. Small tasks never fan out. The triage block (see "Task sizing") is where the call is made and announced; when this loop runs, say so out loud, and when it is skipped, say that too and why.
 
-**Step 0 — name the reference before building.** The critic is only as good as what it judges against. Every substantive task writes down its reference first, in order of preference:
+**Step 0 — name the reference before building.** The critic is only as good as what it judges against. Every task that enters this loop (and every medium task getting its one cold critic pass) writes down its reference first, in order of preference:
 
 1. **The real thing** (copy/parity work): the actual product being matched. Blind side-by-side.
 2. **Best-in-class analog** (new work): the best existing example of this kind of deliverable, named explicitly. Judged side-by-side even though we are not copying it.
@@ -121,7 +150,7 @@ This section is a permanent, explicit opt-in to multi-agent orchestration (ultra
 
 No reference, no build. If you can't write down what "wowed" means for this task, that's a Confusion Protocol stop.
 
-**The loop, for every substantive task:**
+**The loop, for every task triaged large:**
 
 1. **Decompose and fan out.** Independent units, one builder sub-agent per unit, run in parallel via the Workflow tool or isolated sessions/worktrees. Serial work on parallelizable units is wasted wall-clock. Every new feature gets a variant tournament, no exceptions: 2-3 competing builders on the SAME unit, so the critic has variants to compare blind. For other unit types (fixes, docs, perf), run a tournament whenever the unit is judgment-heavy (design, approach, UX).
 2. **Builder never grades its own work.** Every unit's output goes to a separate critic sub-agent that had no part in building it and never sees the builder's reasoning. Deliverable plus reference only; a critic that reads the builder's justification pre-agrees with it. Self-review does not count as review.
@@ -139,13 +168,13 @@ No reference, no build. If you can't write down what "wowed" means for this task
 - **Docs:** critic reads cold and actually follows them; the first confusion is a FAIL.
 - **Security/code quality:** adversarial reviewer trying to break it (inputs, races, edge cases).
 
-**Solo (no fan-out) is allowed only for:** conversational answers, trivial mechanical edits, and reading/investigation that fits in one context. When in doubt, fan out.
+**Solo (no fan-out) is the rule for:** small tasks, most medium tasks, conversational answers, and reading/investigation that fits in one context. Medium bug fixes still get the one cold critic pass from "Task sizing" (an attacker on the repro), just not the tournament. When in doubt between medium and large, triage says pick medium; when a large task is in doubt about how to split, fan out.
 
 ## Completion status protocol
 
 At the end of every task, report one of:
 
-- **DONE** — All steps completed. Evidence provided for every claim. Tests + evals in the diff. Skillify checklist green if a failure was promoted. Ready to merge.
+- **DONE** — All steps completed. Evidence provided for every claim. Tests + evals in the diff as the triage size requires. Skillify checklist green if a failure was promoted. Ready to merge.
 - **DONE_WITH_CONCERNS** — Completed, but with issues Julien should know about. List each concern with severity and a proposed follow-up.
 - **BLOCKED** — Cannot proceed. State what's blocking and what was already tried.
 - **NEEDS_CONTEXT** — Missing information required to continue. State exactly what's needed.
@@ -154,7 +183,7 @@ At the end of every task, report one of:
 
 ## Self-rating — proud or loop
 
-Reporting a completion status is not the end of the task. Before the final report, rate the work:
+Reporting a completion status is not the end of the task. Before the final report, rate the work. The rating scales with the triage size: a **small** task gets one line (score + yes/no from a fresh read of the diff) and no loop; **medium** and **large** get the full protocol below:
 
 - Score the finished work 1-10 and print the score. Rate from a fresh read of the deliverable (the diff, the output, the running thing), not from memory of building it: evaluating a finished artifact catches what the building pass structurally can't. Then answer one question honestly: am I proud and happy with this work? Yes or no.
 - The bar is the "How to work" section, not "it passes": complete, tested, documented, understood, the kind of result that genuinely impresses Julien. A 7 with a shrug is a no.
@@ -163,7 +192,7 @@ Reporting a completion status is not the end of the task. Before the final repor
 - Anchor the score. Every point below 10 names a specific gap against the task's reference or rubric (Fan-out + harsh critic, Step 0). A score with no named gaps is a guess, not a rating.
 - Drift guard. Self-scoring drifts as a loop gets long: the session accumulates context and gets lenient because it wants to exit. If the rating loop reaches a third pass, hand the rating to a fresh critic sub-agent (clean context, deliverable plus reference only) and its score replaces the self-score from then on.
 - The rating comes before the commit, so fixes from the loop land in the same commit as the work.
-- This rating is not the review. It happens only after every unit has passed the fan-out critic loop; a proud yes never substitutes for a critic pass, and a critic pass never skips the rating.
+- This rating is not the review. Wherever a critic pass applies (medium and large, per "Task sizing"), the rating happens only after every unit has passed it; a proud yes never substitutes for a critic pass, and a critic pass never skips the rating.
 
 ## After every task — commit, push, restart
 
